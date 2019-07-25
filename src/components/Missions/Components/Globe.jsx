@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
-
+import moment from 'moment-timezone';
 import {
-  Viewer, Entity, Model, Globe,
+  Viewer, Entity, Model, Globe, Clock, CameraFlyTo, PathGraphics,
 } from 'resium';
 import Cesium from 'cesium';
 
@@ -22,8 +22,16 @@ const { RangePicker } = DatePicker;
 const origin = Cesium.Cartesian3.fromDegrees(-90.0, 40.0, 200000.0);
 const modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(origin);
 
+Cesium.Ion.defaultAccessToken = process.env.CESIUM_ION_TOKEN;
+
 function getPos(lat, long, height) {
-  const pos = Cesium.Cartesian3.fromDegrees(lat, long, height);
+  const pos = Cesium.Cartesian3.fromArray([lat, long, height]);
+
+  return Cesium.Transforms.eastNorthUpToFixedFrame(pos);
+}
+
+function getArray(x, y, z) {
+  const pos = Cesium.Cartesian3.fromArray([x, y, z]);
 
   return Cesium.Transforms.eastNorthUpToFixedFrame(pos);
 }
@@ -53,10 +61,6 @@ function DisplayValue({
 
   const { state } = useContext(Context);
 
-  const [latitude, setLatitude] = useState(21.289373);
-  const [longitude, setLongitude] = useState(157.917480);
-  const [altitude, setAltitude] = useState(350000.0);
-
   const [orbitsState, setOrbitsState] = useState(orbits);
 
   const [retrieveOrbitHistory, setRetrieveOrbitHistory] = useState(null);
@@ -71,15 +75,44 @@ function DisplayValue({
     }
   }, []);
 
-  useState(() => {
+  useEffect(() => {
     orbitsState.forEach((orbit, i) => {
-      if (state[orbit.nodeProcess] && state[orbit.nodeProcess].node_loc_pos_eci && state[orbit.nodeProcess].node_loc_pos_eci.pos) {
-        orbitsState[i].position = state[orbit.nodeProcess].node_loc_pos_eci.pos;
+      if (state[orbit.nodeProcess] && state[orbit.nodeProcess].node_loc_pos_eci && state[orbit.nodeProcess].node_loc_pos_eci.pos && orbit.live) {
+        const tempOrbit = [...orbitsState];
+
+        tempOrbit[i].position = state[orbit.nodeProcess].node_loc_pos_eci.pos;
+        tempOrbit[i].orientation = state[orbit.nodeProcess].node_loc_att_icrf.pos;
+
+        setOrbitsState(tempOrbit);
       }
     });
   }, [state]);
 
-  const [availability, setAvailability] = useState(null);
+  // useEffect(() => {
+  //   const t = setTimeout(() => {
+  //     const temp = [...orbitsState];
+
+  //     temp[0].position = [
+  //       temp[0].position[0] += 1,
+  //       temp[0].position[1] += 1,
+  //       temp[0].position[2] += 1,
+  //     ];
+
+  //     setOrbitsState(temp);
+  //   }, 1000);
+
+  //   console.log(orbitsState[0]);
+
+  //   return () => {
+  //     clearTimeout(t);
+  //   };
+  // }, [orbitsState]);
+
+  const [start, setStart] = useState(Cesium.JulianDate.now);
+  const [stop, setStop] = useState(null);
+  const [cameraFlyTo, setCameraFlyTo] = useState(null);
+
+  const [position, setPosition] = useState(null);
 
   // useEffect(() => {
   //   const timeout = setTimeout(() => {
@@ -94,6 +127,8 @@ function DisplayValue({
   //   };
   // }, [x]);
 
+  // ground track
+
   /** Handle the collection of historical data */
   useEffect(() => {
     if (retrieveOrbitHistory !== null) {
@@ -107,7 +142,7 @@ function DisplayValue({
           const to = ((form[retrieveOrbitHistory].dateRange.value[1].unix() / 86400.0) + 2440587.5 - 2400000.5);
 
           query.send(
-            `database=agent_dump?collection=${orbitsState[retrieveOrbitHistory].nodeProcess}?multiple=true?query={"utc": { "$gt": ${from}, "$lt": ${to} }}?options={"limit": 20}`,
+            `database=agent_dump?collection=${orbitsState[retrieveOrbitHistory].nodeProcess}?multiple=true?query={"utc": { "$gt": ${from}, "$lt": ${to} }}?options={"limit": 200}`,
           );
         }
 
@@ -115,40 +150,46 @@ function DisplayValue({
           try {
             const json = JSON.parse(data);
 
+            console.log(json);
 
-            let start;
-            let stop;
+            const tempOrbit = [...orbitsState];
 
-            orbitsState[retrieveOrbitHistory].live = false;
+            let startOrbit;
+            let stopOrbit;
+            let startOrbitPosition;
+
+            tempOrbit[retrieveOrbitHistory].live = false;
 
             if (json.length > 0) {
-              start = new Cesium.JulianDate(json[0].utc + 2400000.5);
-              stop = new Cesium.JulianDate(json[json.length - 1].utc + 2400000.5);
+              startOrbit = Cesium.JulianDate.fromDate(moment.unix((((json[0].utc + 2400000.5) - 2440587.5) * 86400.0)).toDate());
+              stopOrbit = Cesium.JulianDate.fromDate(moment.unix((((json[json.length - 1].utc + 2400000.5) - 2440587.5) * 86400.0)).toDate());
+              startOrbitPosition = json[0].node_loc_pos_eci.pos;
             }
 
             const sampledPosition = new Cesium.SampledPositionProperty();
 
             json.forEach((orbit) => {
-              const [x, y, z] = orbit.node_loc_pos_eci.pos;
+              const p = orbit.node_loc_pos_eci.pos;
 
               if (orbit.utc && orbit.node_loc_pos_eci) {
-                const date = new Cesium.JulianDate(orbit.utc + 2400000.5);
-                const position = new Cesium.Cartesian3(x, y, z);
+                const date = Cesium.JulianDate.fromDate(moment.unix((((orbit.utc + 2400000.5) - 2440587.5) * 86400.0)).toDate());
+                const pos = Cesium.Cartesian3.fromArray(p);
 
-                sampledPosition.addSample(date, position);
+                sampledPosition.addSample(date, pos);
               }
             });
 
-            orbitsState[retrieveOrbitHistory].history = {
-              availability: new Cesium.TimeIntervalCollection([new Cesium.TimeInterval({
-                start, stop,
-              })]),
-              position: sampledPosition,
-            };
+            tempOrbit[retrieveOrbitHistory].position = sampledPosition;
 
-            setAvailability(new Cesium.TimeIntervalCollection([new Cesium.TimeInterval({
-              start, stop,
-            })]));
+            setStart(startOrbit);
+            setStop(stopOrbit);
+            setOrbitsState(tempOrbit);
+
+            setCameraFlyTo(Cesium.Cartesian3.fromArray([
+              startOrbitPosition[0] * 3,
+              startOrbitPosition[1] * 3,
+              startOrbitPosition[2] * 3,
+            ]));
 
             query.close();
 
@@ -165,6 +206,7 @@ function DisplayValue({
   return (
     <BaseComponent
       name={nameState}
+      subheader={orbitsState.length === 0 ? 'No orbits to display.' : null}
       liveOnly
       showStatus={showStatus}
       status={status}
@@ -313,7 +355,7 @@ function DisplayValue({
                         defaultValue={orbit.nodeProcess}
                       />
                     </Form.Item>
-{/* 
+{/*
                     <Form.Item
                       label="Y Data Key"
                       key="YDataKey"
@@ -362,7 +404,7 @@ function DisplayValue({
                 );
               })
             }
-            <Panel header="Add Chart" key="3">
+            <Panel header="Add Orbit" key="3">
               <Switch
                 checkedChildren="Live"
                 unCheckedChildren="Past"
@@ -390,7 +432,7 @@ function DisplayValue({
                   showTime
                   format="YYYY-MM-DD HH:mm:ss"
                   disabled={form.newOrbit.live}
-                  onChange={moment => setForm({ ...form, newOrbit: { ...form.newOrbit, dateRange: { ...form.newOrbit.dateRange, value: moment } } })}
+                  onChange={m => setForm({ ...form, newOrbit: { ...form.newOrbit, dateRange: { ...form.newOrbit.dateRange, value: m } } })}
                 />
               </Form.Item>
 
@@ -518,7 +560,7 @@ function DisplayValue({
                 block
                 onClick={() => {
                   // Check if required values are here
-                  if (form.newOrbit.modelFileName.value && form.newOrbit.nodeProcess.value && form.newOrbit.DataKey.value) {
+                  if (form.newOrbit.nodeProcess.value) {
                     // Make form slots for new plot
                     setForm({
                       ...form,
@@ -532,17 +574,17 @@ function DisplayValue({
                     orbitsState.push({
                       name: form.newOrbit.name.value,
                       nodeProcess: form.newOrbit.nodeProcess.value,
-                      modelFileName: form.newOrbit.modelFileName.value,
-                      dataKey: form.newOrbit.dataKey.value,
-                      processDataKey: form.newValue.processDataKey.value.includes('return') || form.newValue.processDataKey.value.includes('=>') ? form.newOrbit.processDataKey.value : x => x,
+                      modelFileName: form.newOrbit.modelFileName.value === '' ? form.newOrbit.modelFileName.value : 'cubesat1.glb',
+                      processDataKey: form.newOrbit.processDataKey && (form.newOrbit.processDataKey.value.includes('return') || form.newOrbit.processDataKey.value.includes('=>')) ? form.newOrbit.processDataKey.value : x => x,
                       live: form.newOrbit.live,
+                      position: [21.289373, 157.917480, 350000.0],
                     });
 
                     // Clear form values
                     form.newOrbit.name.value = '';
                     form.newOrbit.nodeProcess.value = '';
                     form.newOrbit.modelFileName.value = '';
-                    form.newOrbit.dataKey.value = '';
+                    // form.newOrbit.dataKey.value = '';
                     form.newOrbit.processDataKey.value = '';
 
                     // If not live, retrieve the data from database
@@ -552,7 +594,7 @@ function DisplayValue({
                   }
                 }}
               >
-                Add Chart
+                Add Orbit
               </Button>
             </Panel>
           </Collapse>
@@ -562,23 +604,52 @@ function DisplayValue({
       <Viewer
         fullscreenButton={false}
       >
-        <Globe enableLighting />
+        <Globe />
+        <Clock
+          startTime={start}
+          stopTime={stop}
+          currentTime={start}
+        />
+        <Entity>
+          <PathGraphics />
+        </Entity>
         {
-          orbitsState.map(orbit => (
-            <Entity
-              name={orbit.name}
-              availability={availability}
-              position={orbit.history ? orbit.history.position : null}
-            >
-              <Model
-                modelMatrix={getPos(orbit.position[0], orbit.position[1], orbit.position[2])}
-                url={model}
-                minimumPixelSize={15}
-              />
-            </Entity>
-          ))
-        }
+          orbitsState.map((orbit) => {
+            if (orbit.live) {
+              return (
+                <Entity
+                  key={orbit.name}
+                >
+                  <Model
+                    modelMatrix={getPos(orbit.position[0], orbit.position[1], orbit.position[2])}
+                    url={model}
+                    minimumPixelSize={35}
+                  />
+                  <PathGraphics
+                    // leadTime={Cesium.Property()}
+                  />
+                </Entity>
+              );
+            }
 
+            return (
+              <span
+                key={orbit.name}
+              >
+                {
+                  cameraFlyTo ? <CameraFlyTo destination={cameraFlyTo} /> : null
+                }
+                <Entity
+                  name={orbit.name}
+                  position={orbit.position}
+                  point={{ pixelSize: 10 }}
+                >
+                  <PathGraphics />
+                </Entity>
+              </span>
+            );
+          })
+        }
       </Viewer>
       <table className="mt-4 w-full">
         <tbody>
@@ -587,14 +658,22 @@ function DisplayValue({
             <td className="p-2 pr-8">Latitude</td>
             <td className="p-2 pr-8">Longitude</td>
             <td className="p-2 pr-8">Altitude</td>
+            <td className="p-2 pr-8">x</td>
+            <td className="p-2 pr-8">y</td>
+            <td className="p-2 pr-8">z</td>
+            <td className="p-2 pr-8">w</td>
           </tr>
           {
           orbitsState.map(orbit => (
-            <tr className="text-gray-700 border-b border-gray-400">
+            <tr className="text-gray-700 border-b border-gray-400" key={orbit.name}>
               <td className="p-2 pr-8">{orbit.name}</td>
               <td className="p-2 pr-8">{orbit.position[0]}</td>
               <td className="p-2 pr-8">{orbit.position[1]}</td>
               <td className="p-2 pr-8">{orbit.position[2]}</td>
+              <td className="p-2 pr-8">{orbit.orientation.d.x}</td>
+              <td className="p-2 pr-8">{orbit.orientation.d.y}</td>
+              <td className="p-2 pr-8">{orbit.orientation.d.z}</td>
+              <td className="p-2 pr-8">{orbit.orientation.w}</td>
             </tr>
           ))
         }
@@ -631,7 +710,7 @@ DisplayValue.propTypes = {
   status: (props, propName, componentName) => {
     if (props.showStatus) {
       return new Error(
-        `${propName} is required when showStatus is true in ${componentName}.`
+        `${propName} is required when showStatus is true in ${componentName}.`,
       );
     }
   },

@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useReducer } from 'react';
 import moment from 'moment-timezone';
+import { Responsive, WidthProvider } from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 import {
   Context, actions, reducer,
@@ -18,13 +21,82 @@ import Chart from '../../components/Missions/Components/Chart';
 import Globe from '../../components/Missions/Components/Globe';
 import useWebSocket from '../../hooks/useWebSocket';
 
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
+
 function neutron1() {
   /**
    * Store the agent statuses in the global store.
    */
   const [state, dispatch] = useReducer(reducer, {});
 
-  const [latestMessage, setLatestMessage] = useState({});
+  const [layouts, setLayouts] = useState({
+    lg: [
+      {
+        i: 'a',
+        x: 0,
+        y: 0,
+        w: 4,
+        h: 7,
+      },
+      {
+        i: 'b',
+        x: 4,
+        y: 0,
+        w: 4,
+        h: 7,
+      },
+      {
+        i: 'c',
+        x: 8,
+        y: 0,
+        w: 4,
+        h: 7,
+      },
+      {
+        i: 'd',
+        x: 0,
+        y: 1,
+        w: 12,
+        h: 9,
+      },
+      {
+        i: 'e',
+        x: 0,
+        y: 2,
+        w: 12,
+        h: 34,
+      },
+      {
+        i: 'f',
+        x: 0,
+        y: 3,
+        w: 12,
+        h: 18,
+      },
+      {
+        i: 'g',
+        x: 0,
+        y: 4,
+        w: 12,
+        h: 18,
+      },
+      {
+        i: 'h',
+        x: 0,
+        y: 5,
+        w: 12,
+        h: 18,
+      },
+      {
+        i: 'i',
+        x: 0,
+        y: 6,
+        w: 12,
+        h: 18,
+      },
+    ],
+  });
 
   useEffect(() => {
     const all = socket('live', '/live/all');
@@ -48,7 +120,302 @@ function neutron1() {
 
   return (
     <Context.Provider value={{ state, dispatch }}>
-      <div className="p-4">
+      <div className="m-3 mb-32">
+        <ResponsiveGridLayout
+          className="layout"
+          breakpoints={{
+            lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0
+          }}
+          cols={{
+            lg: 12, md: 10, sm: 6, xs: 4, xxs: 2
+          }}
+          layouts={layouts}
+          margin={[12, 12]}
+          draggableHandle=".dragHandle"
+          rowHeight={20}
+        >
+          <div key="a" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+            <Content
+              name="Agent Statuses"
+            >
+              <div className="h-32 resize-y">
+                <Status
+                  statuses={[]}
+                />
+              </div>
+            </Content>
+          </div>
+          <div key="b" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+            <DisplayValue
+              name="HSFLPC23 CPU Load"
+              displayValues={
+                [
+                  {
+                    name: 'CPU Load',
+                    nodeProcess: 'hsflpc23:cpu',
+                    dataKey: 'device_cpu_load_000',
+                    unit: '%',
+                    processDataKey: x => x.toFixed(2)
+                  },
+                  {
+                    name: 'GiB',
+                    nodeProcess: 'hsflpc23:cpu',
+                    dataKey: 'device_cpu_gib_000',
+                    unit: 'GiB',
+                    processDataKey: x => x.toFixed(2)
+                  },
+                  {
+                    name: 'Max GiB',
+                    nodeProcess: 'hsflpc23:cpu',
+                    dataKey: 'device_cpu_maxgib_000',
+                    unit: 'GiB',
+                    processDataKey: x => x.toFixed(2)
+                  },
+                ]
+              }
+              subheader="06231999-1630Z"
+              nodeProc="hsflpc23:cpu"
+              dataKey="device_cpu_load_000"
+              unit="%"
+            >
+              <div className="text-center font-bold text-red-600 text-xl">
+                67&deg;C
+              </div>
+            </DisplayValue>
+          </div>
+          <div key="c" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+            <Clock />
+          </div>
+          <div key="d" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+            <Commands />
+          </div>
+          <div key="e" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+            <Globe
+              name="Orbit"
+              nodeProc="beagle1:adcs"
+              orbits={[
+                {
+                  name: 'neutron1',
+                  modelFileName: 'cubesat1.glb',
+                  nodeProcess: 'cubesat1:propagator_simple',
+                  live: true,
+                  position: [21.289373, 157.917480, 350000.0],
+                  orientation: {
+                    d: {
+                      x: 0,
+                      y: 0,
+                      z: 0,
+                    },
+                    w: 0,
+                  },
+                },
+              ]}
+            />
+          </div>
+          <div key="f" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+            <Chart
+              name="Temperature"
+              nodeProc="beagle1:eps"
+              XDataKey="utc"
+              processXDataKey={
+                x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
+              }
+              processYDataKey={
+                y => y
+              }
+              plots={
+                [
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'red'
+                    },
+                    name: '1',
+                    YDataKey: 'device_tsen_temp_001',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  },
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'blue'
+                    },
+                    name: '2',
+                    YDataKey: 'device_tsen_temp_002',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  },
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'orange'
+                    },
+                    name: '3',
+                    YDataKey: 'device_tsen_temp_003',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  }
+                ]
+              }
+            />
+          </div>
+          <div key="g" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+            <Chart
+              name="Voltage"
+              nodeProc="beagle1:eps"
+              XDataKey="utc"
+              processXDataKey={
+                x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
+              }
+              processYDataKey={
+                y => y
+              }
+              plots={
+                [
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'red'
+                    },
+                    name: '5V',
+                    YDataKey: 'device_bus_volt_001',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  },
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'blue'
+                    },
+                    name: '3.3V',
+                    YDataKey: 'device_bus_volt_002',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  },
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'orange'
+                    },
+                    name: 'Battery Voltage',
+                    YDataKey: 'device_bus_volt_003',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  }
+                ]
+              }
+            />
+          </div>
+          <div key="h" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+            <Chart
+              name="Amperage"
+              nodeProc="beagle1:eps"
+              XDataKey="utc"
+              processXDataKey={
+                x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
+              }
+              processYDataKey={
+                y => y
+              }
+              plots={
+                [
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'red'
+                    },
+                    name: '5V',
+                    YDataKey: 'device_bus_amp_001',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  },
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'blue'
+                    },
+                    name: '3.3V',
+                    YDataKey: 'device_bus_amp_002',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  },
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'orange'
+                    },
+                    name: 'Battery Voltage',
+                    YDataKey: 'device_bus_amp_003',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  }
+                ]
+              }
+            />
+          </div>
+          <div key="i" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+            <Chart
+              name="Battery Health"
+              nodeProc="beagle1:eps"
+              XDataKey="utc"
+              processXDataKey={
+                x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
+              }
+              processYDataKey={
+                y => y
+              }
+              plots={
+                [
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    marker: {
+                      color: 'red'
+                    },
+                    name: 'Battery Percentage',
+                    YDataKey: 'device_batt_percentage_000',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  },
+                  {
+                    x: [],
+                    y: [],
+                    type: 'scatter',
+                    mode: 'marker',
+                    marker: {
+                      color: 'blue'
+                    },
+                    name: 'Charge',
+                    YDataKey: 'device_batt_charge_000',
+                    nodeProcess: 'neutron1:eps',
+                    live: true
+                  }
+                ]
+              }
+            />
+          </div>
+        </ResponsiveGridLayout>
+      </div>
+      {/* <div className="p-4">
         <div className="flex flex-row">
           <Card flex="w-1/3">
             <Content
@@ -358,7 +725,7 @@ function neutron1() {
             }
           />
         </Card>
-      </div>
+      </div> */}
     </Context.Provider>
   );
 }
