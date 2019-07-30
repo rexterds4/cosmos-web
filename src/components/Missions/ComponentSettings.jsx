@@ -9,14 +9,14 @@ function ComponentSettings({
   visible,
   closeModal,
   children,
-  submitForm
+  submitForm,
 }) {
   return (
     <Modal
       bodyStyle={{ padding: '1em' }}
       width={600}
       visible={visible}
-      title="Widget Settings"
+      title="Component Settings"
       /**
        * On pressing the "OK" button at the footer of the modal, call the "submitForm"
        * and "closeModal" prop methods in the parent component (the widget). This will get
@@ -50,7 +50,7 @@ ComponentSettings.propTypes = {
 };
 
 ComponentSettings.defaultProps = {
-  children: []
+  children: [],
 };
 
 const SettingsForm = Form.create({ name: 'horizontal_login' })(ComponentSettings);
