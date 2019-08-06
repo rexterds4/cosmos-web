@@ -21,7 +21,7 @@ import Attitude from '../../components/Missions/Components/Attitude';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-function neutron1() {
+function Neutron1() {
   /**
    * Store the agent statuses in the global store.
    */
@@ -55,14 +55,14 @@ function neutron1() {
         x: 0,
         y: 1,
         w: 12,
-        h: 9,
+        h: 10,
       },
       {
         i: 'e',
         x: 0,
         y: 2,
         w: 6,
-        h: 20,
+        h: 22,
       },
       {
         i: 'f',
@@ -97,7 +97,7 @@ function neutron1() {
         x: 6,
         y: 2,
         w: 6,
-        h: 34,
+        h: 22,
       },
     ],
   });
@@ -138,7 +138,7 @@ function neutron1() {
           draggableCancel=".preventDragHandle"
           rowHeight={20}
         >
-          <div key="a" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="a" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <Content
               name="Agent Statuses"
             >
@@ -147,28 +147,28 @@ function neutron1() {
               />
             </Content>
           </div>
-          <div key="b" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="b" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <DisplayValue
-              name="HSFLPC23 CPU Load"
+              name="beagle1 CPU"
               displayValues={
                 [
                   {
                     name: 'CPU Load',
-                    nodeProcess: 'hsflpc23:cpu',
+                    nodeProcess: 'beagle1:cpu',
                     dataKey: 'device_cpu_load_000',
                     unit: '%',
                     processDataKey: x => x.toFixed(2),
                   },
                   {
                     name: 'GiB',
-                    nodeProcess: 'hsflpc23:cpu',
+                    nodeProcess: 'beagle1:cpu',
                     dataKey: 'device_cpu_gib_000',
                     unit: 'GiB',
                     processDataKey: x => x.toFixed(2),
                   },
                   {
                     name: 'Max GiB',
-                    nodeProcess: 'hsflpc23:cpu',
+                    nodeProcess: 'beagle1:cpu',
                     dataKey: 'device_cpu_maxgib_000',
                     unit: 'GiB',
                     processDataKey: x => x.toFixed(2),
@@ -185,13 +185,13 @@ function neutron1() {
               </div>
             </DisplayValue>
           </div>
-          <div key="c" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="c" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <Clock />
           </div>
-          <div key="d" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="d" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <Commands />
           </div>
-          <div key="e" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="e" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <Globe
               name="Orbit"
               nodeProc="beagle1:adcs"
@@ -214,7 +214,7 @@ function neutron1() {
               ]}
             />
           </div>
-          <div key="f" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="f" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <Chart
               name="Temperature"
               nodeProc="beagle1:eps"
@@ -223,7 +223,7 @@ function neutron1() {
                 x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
               }
               processYDataKey={
-                y => y
+                y => y - 273.15
               }
               plots={
                 [
@@ -236,6 +236,7 @@ function neutron1() {
                     },
                     name: '1',
                     YDataKey: 'device_tsen_temp_001',
+                    processYDataKey: y => y - 273.15,
                     nodeProcess: 'beagle1:eps',
                     live: true,
                   },
@@ -248,6 +249,7 @@ function neutron1() {
                     },
                     name: '2',
                     YDataKey: 'device_tsen_temp_002',
+                    processYDataKey: y => y - 273.15,
                     nodeProcess: 'beagle1:eps',
                     live: true,
                   },
@@ -260,6 +262,7 @@ function neutron1() {
                     },
                     name: '3',
                     YDataKey: 'device_tsen_temp_003',
+                    processYDataKey: y => y - 273.15,
                     nodeProcess: 'beagle1:eps',
                     live: true,
                   },
@@ -267,7 +270,7 @@ function neutron1() {
               }
             />
           </div>
-          <div key="g" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="g" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <Chart
               name="Voltage"
               nodeProc="beagle1:eps"
@@ -320,7 +323,7 @@ function neutron1() {
               }
             />
           </div>
-          <div key="h" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="h" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <Chart
               name="Amperage"
               nodeProc="beagle1:eps"
@@ -373,7 +376,7 @@ function neutron1() {
               }
             />
           </div>
-          <div key="i" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="i" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <Chart
               name="Battery Health"
               nodeProc="beagle1:eps"
@@ -415,7 +418,7 @@ function neutron1() {
               }
             />
           </div>
-          <div key="j" className="p-3 shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
+          <div key="j" className="shadow overflow-x-auto" style={{ backgroundColor: '#fbfbfb' }}>
             <Attitude
               name="Attitude"
               attitudes={[
@@ -437,319 +440,8 @@ function neutron1() {
           </div>
         </ResponsiveGridLayout>
       </div>
-      {/* <div className="p-4">
-        <div className="flex flex-row">
-          <Card flex="w-1/3">
-            <Content
-              name="Agent Statuses"
-            >
-              <div className="h-32 overflow-y-auto resize-y">
-                <Status
-                  statuses={[]}
-                />
-              </div>
-            </Content>
-          </Card>
-          <Card flex="w-1/3">
-            <DisplayValue
-              name="HSFLPC23 CPU Load"
-              displayValues={
-                [
-                  {
-                    name: 'CPU Load',
-                    nodeProcess: 'hsflpc23:cpu',
-                    dataKey: 'device_cpu_load_000',
-                    unit: '%',
-                    processDataKey: x => x.toFixed(2)
-                  },
-                  {
-                    name: 'GiB',
-                    nodeProcess: 'hsflpc23:cpu',
-                    dataKey: 'device_cpu_gib_000',
-                    unit: 'GiB',
-                    processDataKey: x => x.toFixed(2)
-                  },
-                  {
-                    name: 'Max GiB',
-                    nodeProcess: 'hsflpc23:cpu',
-                    dataKey: 'device_cpu_maxgib_000',
-                    unit: 'GiB',
-                    processDataKey: x => x.toFixed(2)
-                  },
-                ]
-              }
-              subheader="06231999-1630Z"
-              nodeProc="hsflpc23:cpu"
-              dataKey="device_cpu_load_000"
-              unit="%"
-            >
-              <div className="text-center font-bold text-red-600 text-xl">
-                67&deg;C
-              </div>
-            </DisplayValue>
-          </Card>
-          <Card flex="w-1/3">
-            <Clock />
-          </Card>
-        </div>
-        <div className="pb-1">
-          <Card>
-            <Commands />
-          </Card>
-        </div>
-        <Card>
-          <Globe
-            name="Orbit"
-            nodeProc="beagle1:adcs"
-            orbits={[
-              {
-                name: 'neutron1',
-                modelFileName: 'cubesat1.glb',
-                nodeProcess: 'neutron1:adcs',
-                live: true,
-                position: [21.289373, 157.917480, 350000.0],
-              },
-            ]}
-          />
-        </Card>
-        <Card>
-          <Chart
-            name="Temperature"
-            nodeProc="neutron1:eps"
-            XDataKey="utc"
-            processXDataKey={
-              x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
-            }
-            processYDataKey={
-              y => y
-            }
-            plots={
-              [
-                {
-                  x: [],
-                  y: [],
-                  type: 'scatter',
-                  marker: {
-                    color: 'red'
-                  },
-                  name: '1',
-                  YDataKey: 'device_tsen_temp_001',
-                  nodeProcess: 'neutron1:eps',
-                  live: true
-                },
-                {
-                  x: [],
-                  y: [],
-                  type: 'scatter',
-                  marker: {
-                    color: 'blue'
-                  },
-                  name: '2',
-                  YDataKey: 'device_tsen_temp_002',
-                  nodeProcess: 'neutron1:eps',
-                  live: true
-                },
-                {
-                  x: [],
-                  y: [],
-                  type: 'scatter',
-                  marker: {
-                    color: 'orange'
-                  },
-                  name: '3',
-                  YDataKey: 'device_tsen_temp_003',
-                  nodeProcess: 'neutron1:eps',
-                  live: true
-                }
-              ]
-            }
-          />
-        </Card>
-        <div className="flex flex-row">
-          <Card flex="w-1/2">
-            <Chart
-              name="Voltage"
-              nodeProc="neutron1:eps"
-              XDataKey="utc"
-              processXDataKey={
-                x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
-              }
-              processYDataKey={
-                y => y
-              }
-              plots={
-                [
-                  {
-                    x: [],
-                    y: [],
-                    type: 'scatter',
-                    marker: {
-                      color: 'red'
-                    },
-                    name: '5V',
-                    YDataKey: 'device_bus_volt_001',
-                    nodeProcess: 'neutron1:eps',
-                    live: true
-                  },
-                  {
-                    x: [],
-                    y: [],
-                    type: 'scatter',
-                    marker: {
-                      color: 'blue'
-                    },
-                    name: '3.3V',
-                    YDataKey: 'device_bus_volt_002',
-                    nodeProcess: 'neutron1:eps',
-                    live: true
-                  },
-                  {
-                    x: [],
-                    y: [],
-                    type: 'scatter',
-                    marker: {
-                      color: 'orange'
-                    },
-                    name: 'Battery Voltage',
-                    YDataKey: 'device_bus_volt_003',
-                    nodeProcess: 'neutron1:eps',
-                    live: true
-                  }
-                ]
-              }
-            />
-          </Card>
-
-          <Card flex="w-1/2">
-            <Chart
-              name="Amperage"
-              nodeProc="neutron1:eps"
-              XDataKey="utc"
-              processXDataKey={
-                x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
-              }
-              processYDataKey={
-                y => y
-              }
-              plots={
-                [
-                  {
-                    x: [],
-                    y: [],
-                    type: 'scatter',
-                    marker: {
-                      color: 'red'
-                    },
-                    name: '5V',
-                    YDataKey: 'device_bus_amp_001',
-                    nodeProcess: 'neutron1:eps',
-                    live: true
-                  },
-                  {
-                    x: [],
-                    y: [],
-                    type: 'scatter',
-                    marker: {
-                      color: 'blue'
-                    },
-                    name: '3.3V',
-                    YDataKey: 'device_bus_amp_002',
-                    nodeProcess: 'neutron1:eps',
-                    live: true
-                  },
-                  {
-                    x: [],
-                    y: [],
-                    type: 'scatter',
-                    marker: {
-                      color: 'orange'
-                    },
-                    name: 'Battery Voltage',
-                    YDataKey: 'device_bus_amp_003',
-                    nodeProcess: 'neutron1:eps',
-                    live: true
-                  }
-                ]
-              }
-            />
-          </Card>
-        </div>
-
-        <Card>
-          <Chart
-            name="Battery Health"
-            nodeProc="neutron1:eps"
-            XDataKey="utc"
-            processXDataKey={
-              x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
-            }
-            processYDataKey={
-              y => y
-            }
-            plots={
-              [
-                {
-                  x: [],
-                  y: [],
-                  type: 'scatter',
-                  marker: {
-                    color: 'red'
-                  },
-                  name: 'Battery Percentage',
-                  YDataKey: 'device_batt_percentage_000',
-                  nodeProcess: 'neutron1:eps',
-                  live: true
-                },
-                {
-                  x: [],
-                  y: [],
-                  type: 'scatter',
-                  mode: 'marker',
-                  marker: {
-                    color: 'blue'
-                  },
-                  name: 'Charge',
-                  YDataKey: 'device_batt_charge_000',
-                  nodeProcess: 'neutron1:eps',
-                  live: true
-                }
-              ]
-            }
-          />
-        </Card>
-
-        <Card>
-          <Chart
-            name="neutron1 CPU Load"
-            nodeProc="neutron1:cpu"
-            XDataKey="utc"
-            processXDataKey={
-              x => moment.unix((((x + 2400000.5) - 2440587.5) * 86400.0)).format('YYYY-MM-DD HH:mm:ss')
-            }
-            processYDataKey={
-              y => y
-            }
-            plots={
-              [
-                {
-                  x: [],
-                  y: [],
-                  type: 'scatter',
-                  marker: {
-                    color: 'red'
-                  },
-                  name: 'cpu load',
-                  YDataKey: 'device_cpu_load_000',
-                  nodeProcess: 'neutron1:cpu',
-                  live: true
-                }
-              ]
-            }
-          />
-        </Card>
-      </div> */}
     </Context.Provider>
   );
 }
 
-export default neutron1;
+export default Neutron1;

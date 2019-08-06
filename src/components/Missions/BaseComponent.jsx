@@ -44,10 +44,10 @@ function BaseComponent({
         {formItems}
       </ComponentSettings>
 
-      <div className="flex justify-between pr-1 dragHandle cursor-move">
+      <div className="flex justify-between p-3 dragHandle cursor-move" style={{ backgroundColor: '#f1f1f1' }}>
         <div className="flex flex-row flex-shrink-0">
           {showStatus ? (
-            <div className="m-1">
+            <div style={{ marginTop: '0.2em' }}>
               <Badge status={status} />
             </div>
           ) : null}
@@ -89,9 +89,7 @@ function BaseComponent({
         </div>
       </div>
 
-      <Divider />
-
-      <div className="p-2 overflow-y-scroll h-full">
+      <div className="p-4 overflow-y-scroll h-full">
         {children}
       </div>
     </div>
@@ -106,22 +104,26 @@ BaseComponent.propTypes = {
   /** Whether the component can display only live data. Hides/shows the live/past switch. */
   liveOnly: PropTypes.bool,
   /** Function is run when the live/past switch is toggled. */
-  handleLiveSwitchChange: (props, propName, componentName) => {
-    if (!props.liveOnly) {
+  handleLiveSwitchChange: ({ liveOnly }, propName, componentName) => {
+    if (!liveOnly) {
       return new Error(
         `${propName} is required when showStatus is true in ${componentName}.`,
       );
     }
+
+    return null;
   },
   /** Whether to show a circular indicator of the status of the component */
   showStatus: PropTypes.bool,
   /** The type of badge to show if showStatus is true (see the ant design badges component) */
-  status: (props, propName, componentName) => {
-    if (props.showStatus) {
+  status: ({ showStatus }, propName, componentName) => {
+    if (showStatus) {
       return new Error(
         `${propName} is required when showStatus is true in ${componentName}.`,
       );
     }
+
+    return null;
   },
   /** Callback function to launch event when form gets submitted */
   submitForm: PropTypes.func,
